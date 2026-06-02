@@ -1,0 +1,9 @@
+# Persistence
+pgdata/
+data/
+
+# Environment overrides
+.env
+
+# Docker build cache
+.docker/

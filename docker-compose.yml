@@ -1,0 +1,55 @@
+# ──────────────────────────────────────────────────────────────────────────────
+# pgvectordb — PostgreSQL + pgvector for semantic code search
+#
+# Quick start:
+#   docker compose up -d
+#
+# Connect:
+#   psql -h localhost -U postgres -d codebase
+#
+# Customise:
+#   Copy .env.example to .env and adjust values, or edit the variables below.
+#   Port, DB name, user, and password all follow the official postgres image
+#   environment variables — see https://hub.docker.com/_/postgres
+# ──────────────────────────────────────────────────────────────────────────────
+
+services:
+  pgvectordb:
+    build:
+      context: .
+      dockerfile: Dockerfile
+      args:
+        # Override at build time if needed:
+        PG_VERSION: "17"
+        PGVECTOR_VERSION: "0.8.0"
+    image: pgvectordb:latest
+    container_name: pgvectordb
+    # ── Environment ───────────────────────────────────────────────────────────
+    # Default values for local development.
+    # For production or shared setups, copy .env.example to .env and
+    # reference variables: POSTGRES_PASSWORD=${POSTGRES_PASSWORD}
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+      POSTGRES_DB: codebase
+    # ── Ports ─────────────────────────────────────────────────────────────────
+    # Change the host port to avoid conflicts if 5432 is already in use:
+    #   "5433:5432"
+    ports:
+      - "5433:5432"
+    # ── Persistence ───────────────────────────────────────────────────────────
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+      # Init scripts run on first container start only
+      - ./initdb:/docker-entrypoint-initdb.d:ro
+    # ── Health check ──────────────────────────────────────────────────────────
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres"]
+      interval: 5s
+      timeout: 3s
+      retries: 5
+    restart: unless-stopped
+
+volumes:
+  pgdata:
+    name: pgvectordb_data
