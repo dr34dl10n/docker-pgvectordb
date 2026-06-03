@@ -21,6 +21,41 @@ Verify pgvector is active:
 SELECT extname, extversion FROM pg_extension WHERE extname = 'vector';
 ```
 
+## codebase-skill Integration
+
+This container is the database backend for [codebase-skill](https://github.com/dr34dl10n/Codebase-Agent-Skill) (semantic code search for AI agents).
+
+The schema is auto-initialized on first start via `initdb/02_codebase_skill_schema.sql`. Tables created:
+
+| Table | Purpose |
+|-------|---------|
+| `code_chunks` | Code fragments with embeddings (768-dim vectors) |
+| `projects` | Indexed repository metadata |
+
+To deploy codebase-skill with this Docker database:
+
+```bash
+bash deploy.sh --docker
+```
+
+Or manually configure:
+
+```bash
+# .env or environment
+CODEINDEX_DB_MODE=docker
+CODEINDEX_DB_HOST=localhost
+CODEINDEX_DB_PORT=5433
+CODEINDEX_DB_NAME=codebase
+CODEINDEX_DB_USER=postgres
+CODEINDEX_DB_PASSWORD=postgres
+```
+
+If you already have the container running and need to initialize the codebase-skill schema manually:
+
+```bash
+docker exec -i pgvectordb psql -U postgres -d codebase < /path/to/codebase-skill/init_db.sql
+```
+
 ## Configuration
 
 ### Environment variables
@@ -66,16 +101,16 @@ docker compose down -v
 
 ### Init scripts
 
-Any `.sql` or `.sh` file in `initdb/` runs on **first container start only** (standard PostgreSQL behaviour). The default `01_enable_pgvector.sql` creates the `vector` extension.
-
-Add your own schemas, tables, or seed data as numbered files:
+Any `.sql` or `.sh` file in `initdb/` runs on **first container start only** (standard PostgreSQL behaviour). The default scripts set up pgvector and the codebase-skill schema:
 
 ```
 initdb/
-├── 01_enable_pgvector.sql
-├── 02_create_tables.sql      ← add your own
-└── 03_seed_data.sql          ← add your own
+├── 01_enable_pgvector.sql              — creates the vector extension
+├── 02_codebase_skill_schema.sql        — creates tables + indexes + upsert function
+└── 03_seed_data.sql                    ← add your own
 ```
+
+Add your own schemas, tables, or seed data as numbered files.
 
 ## Build arguments
 

@@ -8,9 +8,9 @@
 #   psql -h localhost -U postgres -d codebase
 #
 # Customise:
-#   Copy .env.example to .env and adjust values, or edit the variables below.
-#   Port, DB name, user, and password all follow the official postgres image
-#   environment variables — see https://hub.docker.com/_/postgres
+#   Copy .env.example to .env and adjust values, or set environment variables.
+#   When launched by codebase-skill's deploy.sh --docker, passwords are passed
+#   via environment (never hardcoded here for security).
 # ──────────────────────────────────────────────────────────────────────────────
 
 services:
@@ -25,13 +25,14 @@ services:
     image: pgvectordb:latest
     container_name: pgvectordb
     # ── Environment ───────────────────────────────────────────────────────────
-    # Default values for local development.
-    # For production or shared setups, copy .env.example to .env and
-    # reference variables: POSTGRES_PASSWORD=${POSTGRES_PASSWORD}
+    # Default values for local development / quick start.
+    # For production or codebase-skill deployment, deploy.sh --docker passes
+    # POSTGRES_PASSWORD via the environment (never uses "postgres" in prod).
+    # You can also copy .env.example to .env to customise.
     environment:
-      POSTGRES_USER: postgres
-      POSTGRES_PASSWORD: postgres
-      POSTGRES_DB: codebase
+      POSTGRES_USER: ${POSTGRES_USER:-postgres}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-postgres}
+      POSTGRES_DB: ${POSTGRES_DB:-codebase}
     # ── Ports ─────────────────────────────────────────────────────────────────
     # Change the host port to avoid conflicts if 5432 is already in use:
     #   "5433:5432"
