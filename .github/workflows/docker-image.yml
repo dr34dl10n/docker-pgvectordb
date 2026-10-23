@@ -23,7 +23,7 @@ env:
   REGISTRY: ghcr.io
   IMAGE_NAME: ${{ github.repository_owner }}/pgvectordb
   PG_VERSION: "17"
-  PGVECTOR_VERSION: "0.8.0"
+  PGVECTOR_VERSION: "0.8.7"
 
 jobs:
   build:
